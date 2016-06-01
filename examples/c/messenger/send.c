@@ -63,7 +63,7 @@ int main(int argc, char** argv)
     switch(c)
     {
     case 'a': address = optarg; break;
-    case 's': subject = subject; break;
+    case 's': subject = optarg; break;
     case 'h': usage(); break;
 
     case '?':
@@ -99,6 +99,8 @@ int main(int argc, char** argv)
 
   pn_message_set_address(message, address);
   pn_message_set_subject(message, subject);
+  pn_message_set_creation_time(message, time_now());
+  pn_message_set_durable(message, 1);
   body = pn_message_body(message);
   pn_data_put_string(body, pn_bytes(strlen(msgtext), msgtext));
   pn_messenger_put(messenger, message);

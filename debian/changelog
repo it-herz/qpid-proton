@@ -1,3 +1,15 @@
+qpid-proton (0.13.0-beta-3) unstable; urgency=low
+
+  * Add timestamp and durable flag
+
+ -- Dmitrii Zolotov <dzolotov@herzen.spb.ru>  Thu, 1 Jun 2016 18:52:00 +0300
+
+qpid-proton (0.13.0-beta-2) unstable; urgency=low
+
+  * Fix subject
+
+ -- Dmitrii Zolotov <dzolotov@herzen.spb.ru>  Thu, 31 May 2016 21:24:00 +0300
+
 qpid-proton (0.13.0-beta-1) unstable; urgency=low
 
   * Update to version 0.13.0-beta

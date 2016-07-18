@@ -54,7 +54,8 @@ message& message::operator=(message&& m) {
 message::message(const value& x) : pn_msg_(0) { body() = x; }
 
 message::~message() {
-    body_.data_ = codec::data();      // Must release body before pn_message_free
+    // Workaround proton bug: Must release all refs to body before calling pn_message_free()
+    body_.reset();
     pn_message_free(pn_msg_);
 }
 
@@ -69,7 +70,7 @@ void swap(message& x, message& y) {
 
 pn_message_t *message::pn_msg() const {
     if (!pn_msg_) pn_msg_ = pn_message();
-    body_.data_ = make_wrapper(pn_message_body(pn_msg_));
+    body_.refer(pn_message_body(pn_msg_));
     return pn_msg_;
 }
 
@@ -142,9 +143,7 @@ std::string message::reply_to() const {
 }
 
 void message::correlation_id(const message_id& id) {
-    value v;
-    v.data_ = make_wrapper(pn_message_correlation_id(pn_msg()));
-    v = id;
+    internal::value_ref(pn_message_correlation_id(pn_msg())) = id;
 }
 
 message_id message::correlation_id() const {
@@ -269,6 +268,7 @@ void message::encode(std::vector<char> &s) const {
     size_t sz = std::max(s.capacity(), size_t(512));
     while (true) {
         s.resize(sz);
+        assert(!s.empty());
         int err = pn_message_encode(pn_msg(), const_cast<char*>(&s[0]), &sz);
         if (err) {
             if (err != PN_OVERFLOW)
@@ -288,16 +288,22 @@ std::vector<char> message::encode() const {
 }
 
 void message::decode(const std::vector<char> &s) {
+    if (s.empty())
+        throw error("message decode: no data");
     application_properties_.clear();
     message_annotations_.clear();
     delivery_annotations_.clear();
+    assert(!s.empty());
     check(pn_message_decode(pn_msg(), &s[0], s.size()));
 }
 
 void message::decode(proton::delivery delivery) {
     std::vector<char> buf;
     buf.resize(pn_delivery_pending(unwrap(delivery)));
+    if (buf.empty())
+        throw error("message decode: no delivery pending on link");
     proton::receiver link = delivery.receiver();
+    assert(!buf.empty());
     ssize_t n = pn_link_recv(unwrap(link), const_cast<char *>(&buf[0]), buf.size());
     if (n != ssize_t(buf.size())) throw error(MSG("receiver read failure"));
     clear();

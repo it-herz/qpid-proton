@@ -29,7 +29,6 @@
 #include "proton/transport.hpp"
 
 #include "connector.hpp"
-#include "container_impl.hpp"
 #include "contexts.hpp"
 #include "msg.hpp"
 #include "proton_bits.hpp"
@@ -64,11 +63,15 @@ void connection::open(const connection_options &opts) {
 void connection::close() { pn_connection_close(pn_object()); }
 
 std::string connection::virtual_host() const {
-    return str(pn_connection_get_hostname(pn_object()));
+    return str(pn_connection_remote_hostname(pn_object()));
 }
 
 std::string connection::container_id() const {
     return str(pn_connection_get_container(pn_object()));
+}
+
+std::string connection::user() const {
+    return str(pn_transport_get_user(pn_connection_transport(pn_object())));
 }
 
 container& connection::container() const {

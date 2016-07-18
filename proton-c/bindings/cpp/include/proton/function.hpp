@@ -1,3 +1,6 @@
+#ifndef PROTON_FUNCTION_HPP
+#define PROTON_FUNCTION_HPP
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -17,18 +20,23 @@
  * under the License.
  */
 
-#include "link_namer.hpp"
-#include <sstream>
-
 namespace proton {
 
-link_namer::link_namer(const std::string& s) : prefix_(s), count_(0) {}
+/// A C++03 compatible void no-argument callback function object, used by
+/// container::schedule() and event_loop::inject()
+/// In C++11 you can use std::bind, std::function or a void-no-argument lambda instead.
+///
+/// void_function0 is passed by reference, so instances of sub-classes do not
+/// have to be heap allocated.  Once passed, the instance must not be deleted until
+/// its operator() is called or the container has stopped.
+///
+class void_function0 {
+  public:
+    virtual ~void_function0() {}
+    /// Override the call operator with your code.
+    virtual void operator()() = 0;
+};
 
-std::string link_namer::next() {
-    // TODO aconway 2016-01-19: more efficient conversion, fixed buffer.
-    std::ostringstream o;
-    o << prefix_ << std::hex << ++count_;
-    return o.str();
 }
 
-}
+#endif // PROTON_FUNCTION_HPP

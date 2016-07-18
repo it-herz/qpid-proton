@@ -49,8 +49,15 @@ class url;
 class task;
 class listen_handler;
 
-class container_impl : public container {
+class container_impl : public standard_container {
   public:
+    // Pull in base class functions here so that name search finds all the overloads
+    using standard_container::stop;
+    using standard_container::connect;
+    using standard_container::listen;
+    using standard_container::open_receiver;
+    using standard_container::open_sender;
+
     container_impl(const std::string& id, messaging_handler* = 0);
     ~container_impl();
     std::string id() const PN_CPP_OVERRIDE { return id_; }
@@ -72,6 +79,10 @@ class container_impl : public container {
     void run() PN_CPP_OVERRIDE;
     void stop(const error_condition& err) PN_CPP_OVERRIDE;
     void auto_stop(bool set) PN_CPP_OVERRIDE;
+#if PN_CPP_HAS_STD_FUNCTION
+    void schedule(duration, std::function<void()>) PN_CPP_OVERRIDE;
+#endif
+    void schedule(duration, void_function0&) PN_CPP_OVERRIDE;
 
     // non-interface functions
     void configure_server_connection(connection &c);
@@ -82,23 +93,11 @@ class container_impl : public container {
   private:
     typedef std::map<std::string, acceptor> acceptors;
 
-    struct count_link_namer : public io::link_namer {
-        count_link_namer() : count_(0) {}
-        std::string link_name() {
-            // TODO aconway 2016-01-19: more efficient conversion, fixed buffer.
-            std::ostringstream o;
-            o << "PN" << std::hex << ++count_;
-            return o.str();
-        }
-        uint64_t count_;
-    };
-
     reactor reactor_;
     proton_handler *handler_;
     internal::pn_unique_ptr<proton_handler> override_handler_;
     internal::pn_unique_ptr<proton_handler> flow_controller_;
     std::string id_;
-    count_link_namer id_gen_;
     connection_options client_connection_options_;
     connection_options server_connection_options_;
     proton::sender_options sender_options_;

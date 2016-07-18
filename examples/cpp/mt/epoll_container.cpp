@@ -26,6 +26,7 @@
 
 #include <proton/io/container_impl_base.hpp>
 #include <proton/io/connection_engine.hpp>
+#include <proton/io/link_namer.hpp>
 
 #include <atomic>
 #include <memory>
@@ -104,6 +105,11 @@ class epoll_container : public proton::io::container_impl_base {
     epoll_container(const std::string& id);
     ~epoll_container();
 
+    // Pull in base class functions here so that name search finds all the overloads
+    using standard_container::stop;
+    using standard_container::connect;
+    using standard_container::listen;
+
     proton::returned<proton::connection> connect(
         const std::string& addr, const proton::connection_options& opts) OVERRIDE;
 
@@ -134,6 +140,9 @@ class epoll_container : public proton::io::container_impl_base {
         std::atomic<uint64_t> count_;
     };
 
+     // FIXME aconway 2016-06-07: Unfinished
+    void schedule(proton::duration, std::function<void()>) OVERRIDE { throw std::logic_error("FIXME"); }
+    void schedule(proton::duration, proton::void_function0&) OVERRIDE { throw std::logic_error("FIXME"); }
     atomic_link_namer link_namer;
 
   private:
@@ -244,8 +253,8 @@ class epoll_event_loop : public proton::event_loop {
         return true;
     }
 
-    bool inject(proton::inject_handler& h) OVERRIDE {
-        return inject(std::bind(&proton::inject_handler::on_inject, &h));
+    bool inject(proton::void_function0& f) OVERRIDE {
+        return inject([&f]() { f(); });
     }
 
     jobs pop_all() {
@@ -271,7 +280,11 @@ class pollable_engine : public pollable {
     pollable_engine(epoll_container& c, int fd, int epoll_fd) :
         pollable(fd, epoll_fd),
         loop_(new epoll_event_loop(*this)),
-        engine_(c, c.link_namer, loop_) {}
+        engine_(c, loop_)
+    {
+        proton::connection conn = engine_.connection();
+        proton::io::set_link_namer(conn, c.link_namer);
+    }
 
     ~pollable_engine() {
         loop_->close();                // No calls to notify() after this.
@@ -284,7 +297,7 @@ class pollable_engine : public pollable {
 
     uint32_t work(uint32_t events) {
         try {
-            bool can_read = events & EPOLLIN, can_write = events && EPOLLOUT;
+            bool can_read = events & EPOLLIN, can_write = events & EPOLLOUT;
             do {
                 can_write = can_write && write();
                 can_read = can_read && read();

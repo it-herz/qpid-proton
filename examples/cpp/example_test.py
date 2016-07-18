@@ -259,13 +259,12 @@ class ContainerExampleTest(BrokerTestCase):
                          self.proc(["client", "-a", addr+"/examples"]).wait_exit())
 
     def test_flow_control(self):
-        return
         want="""success: Example 1: simple credit
 success: Example 2: basic drain
 success: Example 3: drain without credit
 success: Exmaple 4: high/low watermark
 """
-        self.assertEqual(want, self.proc(["flow_control", pick_addr(), "-quiet"]).wait_exit())
+        self.assertEqual(want, self.proc(["flow_control", "--address", pick_addr(), "--quiet"]).wait_exit())
 
     def test_encode_decode(self):
         want="""
@@ -288,8 +287,8 @@ map{int(4):string(four), string(five):int(5)}
 
 == Insert with stream operators.
 array<int>[int(1), int(2), int(3)]
-list[int(42), boolean(false), symbol(x)]
-map{string(k1):int(42), symbol(k2):boolean(false)}
+list[int(42), boolean(0), symbol(x)]
+map{string(k1):int(42), symbol(k2):boolean(0)}
 """
         self.maxDiff = None
         self.assertEqual(want, self.proc(["encode_decode"]).wait_exit())
@@ -300,14 +299,31 @@ map{string(k1):int(42), symbol(k2):boolean(false)}
         return os.path.join(pn_root, "examples/cpp/ssl_certs")
 
     def test_ssl(self):
-        # SSL without SASL
+        # SSL without SASL, VERIFY_PEER_NAME
         addr = "amqps://" + pick_addr() + "/examples"
         # Disable valgrind when using OpenSSL
-        out = self.proc(["ssl", addr, self.ssl_certs_dir()], skip_valgrind=True).wait_exit()
+        out = self.proc(["ssl", "-a", addr, "-c", self.ssl_certs_dir()], skip_valgrind=True).wait_exit()
         expect = "Outgoing client connection connected via SSL.  Server certificate identity CN=test_server\nHello World!"
         expect_found = (out.find(expect) >= 0)
         self.assertEqual(expect_found, True)
 
+    def test_ssl_no_name(self):
+        # VERIFY_PEER
+        addr = "amqps://" + pick_addr() + "/examples"
+        # Disable valgrind when using OpenSSL
+        out = self.proc(["ssl", "-a", addr, "-c", self.ssl_certs_dir(), "-v", "noname"], skip_valgrind=True).wait_exit()
+        expect = "Outgoing client connection connected via SSL.  Server certificate identity CN=test_server\nHello World!"
+        expect_found = (out.find(expect) >= 0)
+        self.assertEqual(expect_found, True)
+
+    def test_ssl_bad_name(self):
+        # VERIFY_PEER
+        addr = "amqps://" + pick_addr() + "/examples"
+        # Disable valgrind when using OpenSSL
+        out = self.proc(["ssl", "-a", addr, "-c", self.ssl_certs_dir(), "-v", "fail"], skip_valgrind=True).wait_exit()
+        expect = "Expected failure of connection with wrong peer name"
+        expect_found = (out.find(expect) >= 0)
+        self.assertEqual(expect_found, True)
 
     def test_ssl_client_cert(self):
         # SSL with SASL EXTERNAL
@@ -320,6 +336,20 @@ Hello World!
         out = self.proc(["ssl_client_cert", addr, self.ssl_certs_dir()], skip_valgrind=True).wait_exit()
         expect_found = (out.find(expect) >= 0)
         self.assertEqual(expect_found, True)
+
+    def test_scheduled_send_03(self):
+        # Output should be a bunch of "send" lines but can't guarantee exactly how many.
+        out = self.proc(["scheduled_send_03", "-a", self.addr+"scheduled_send", "-t", "0.1", "-i", "0.001"]).wait_exit().split()
+        self.assertGreater(len(out), 0);
+        self.assertEqual(["send"]*len(out), out)
+
+    def test_scheduled_send(self):
+        try:
+            out = self.proc(["scheduled_send", "-a", self.addr+"scheduled_send", "-t", "0.1", "-i", "0.001"]).wait_exit().split()
+            self.assertGreater(len(out), 0);
+            self.assertEqual(["send"]*len(out), out)
+        except ProcError:       # File not found, not a C++11 build.
+            pass
 
 
 class EngineTestCase(BrokerTestCase):
@@ -361,14 +391,6 @@ class EngineTestCase(BrokerTestCase):
         self.assertEqual(CLIENT_EXPECT,
                          self.proc(["client", "-a", self.addr]).wait_exit())
 
-    def test_flow_control(self):
-        return
-        want="""success: Example 1: simple credit
-success: Example 2: basic drain
-success: Example 3: drain without credit
-success: Exmaple 4: high/low watermark
-"""
-        self.assertEqual(want, self.proc(["flow_control", pick_addr(), "-quiet"]).wait_exit())
 
 class MtBrokerTest(EngineTestCase):
     broker_exe = "mt_broker"

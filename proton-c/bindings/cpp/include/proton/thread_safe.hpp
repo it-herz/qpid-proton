@@ -69,10 +69,10 @@ template <class T>
 class thread_safe : private internal::pn_ptr_base, private internal::endpoint_traits<T> {
     typedef typename T::pn_type pn_type;
 
-    struct inject_decref : public inject_handler {
+    struct inject_decref : public void_function0 {
         pn_type* ptr_;
         inject_decref(pn_type* p) : ptr_(p) {}
-        void on_inject() PN_CPP_OVERRIDE { decref(ptr_); delete this; }
+        void operator()() PN_CPP_OVERRIDE { decref(ptr_); delete this; }
     };
 
   public:
@@ -137,6 +137,9 @@ class returned : private internal::endpoint_traits<T>
 
     /// Release ownership.
     thread_safe<T>* release() const { thread_safe<T>* p = ptr_; ptr_ = 0; return p; }
+
+    /// Get the raw pointer, caller must not delete.
+    thread_safe<T>* get() const { return ptr_; }
 
     /// Implicit conversion to target, usable only in a safe context.
     operator T() { return ptr_->unsafe(); }

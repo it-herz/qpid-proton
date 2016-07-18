@@ -43,8 +43,9 @@ void die(const char *file, int line, const char *message)
 
 void usage(void)
 {
-  printf("Usage: send [-a addr] [message]\n");
+  printf("Usage: send [-a addr] [-s subject] [message]\n");
   printf("-a     \tThe target address [amqp[s]://domain[/name]]\n");
+  printf("-s     \tMessage subject\n");
   printf("message\tA text string to send.\n");
   exit(0);
 }
@@ -54,17 +55,19 @@ int main(int argc, char** argv)
   int c;
   char * address = (char *) "amqp://0.0.0.0";
   char * msgtext = (char *) "Hello World!";
+  char * subject = (char *) "";
   opterr = 0;
 
-  while((c = getopt(argc, argv, "ha:b:c:")) != -1)
+  while((c = getopt(argc, argv, "ha:s:")) != -1)
   {
     switch(c)
     {
     case 'a': address = optarg; break;
+    case 's': subject = subject; break;
     case 'h': usage(); break;
 
     case '?':
-      if(optopt == 'a')
+      if(optopt == 'a' || optopt == 's')
       {
         fprintf(stderr, "Option -%c requires an argument.\n", optopt);
       }
@@ -95,6 +98,7 @@ int main(int argc, char** argv)
   pn_messenger_start(messenger);
 
   pn_message_set_address(message, address);
+  pn_message_set_subject(message, subject);
   body = pn_message_body(message);
   pn_data_put_string(body, pn_bytes(strlen(msgtext), msgtext));
   pn_messenger_put(messenger, message);

@@ -30,3 +30,6 @@ target_link_libraries(recv ${Proton_LIBRARIES})
 target_link_libraries(send ${Proton_LIBRARIES})
 target_link_libraries(recv-async ${Proton_LIBRARIES})
 target_link_libraries(send-async ${Proton_LIBRARIES})
+
+install(TARGETS recv DESTINATION bin)
+install(TARGETS send DESTINATION bin)

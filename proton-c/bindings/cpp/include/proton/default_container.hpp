@@ -22,15 +22,13 @@
  *
  */
 
-// FIXME aconway 2016-05-04: doc
-
 #include "./container.hpp"
 
 namespace proton {
 
-// FIXME aconway 2016-05-04: doc
-
-/// A single-threaded container.    
+/// A single-threaded container.
+///
+/// @copydoc container
 class PN_CPP_CLASS_EXTERN  default_container : public container {
   public:
     /// Create a default, single-threaded container with a messaging_handler.
@@ -54,10 +52,9 @@ class PN_CPP_CLASS_EXTERN  default_container : public container {
     /// Takes ownership of c.
     PN_CPP_EXTERN explicit default_container(container* c) : impl_(c) {}
 
-    // FIXME aconway 2016-05-13: @copydoc all.
-
     PN_CPP_EXTERN returned<connection> connect(const std::string& url, const connection_options &) PN_CPP_OVERRIDE;
     PN_CPP_EXTERN listener listen(const std::string& url, listen_handler& l) PN_CPP_OVERRIDE;
+    using container::listen;
 
     /// @cond INTERNAL
     /// XXX Make private
@@ -80,14 +77,16 @@ class PN_CPP_CLASS_EXTERN  default_container : public container {
         const connection_options &c = connection_options()) PN_CPP_OVERRIDE;
 
     PN_CPP_EXTERN std::string id() const PN_CPP_OVERRIDE;
+
     PN_CPP_EXTERN void client_connection_options(const connection_options &o) PN_CPP_OVERRIDE;
     PN_CPP_EXTERN connection_options client_connection_options() const PN_CPP_OVERRIDE;
+
     PN_CPP_EXTERN void server_connection_options(const connection_options &o) PN_CPP_OVERRIDE;
     PN_CPP_EXTERN connection_options server_connection_options() const PN_CPP_OVERRIDE;
-    /// @copydoc container::sender_options
+
     PN_CPP_EXTERN void sender_options(const class sender_options &o) PN_CPP_OVERRIDE;
     PN_CPP_EXTERN class sender_options sender_options() const PN_CPP_OVERRIDE;
-    /// @copydoc container::receiver_options
+
     PN_CPP_EXTERN void receiver_options(const class receiver_options & o) PN_CPP_OVERRIDE;
     PN_CPP_EXTERN class receiver_options receiver_options() const PN_CPP_OVERRIDE;
 

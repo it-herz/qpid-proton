@@ -197,15 +197,16 @@ listener container_impl::listen(const std::string& url, listen_handler& lh) {
         throw error("already listening on " + url);
     connection_options opts = server_connection_options(); // Defaults
     proton_handler *h = opts.handler();
-    // FIXME aconway 2016-05-12: chandler and acceptor??
     internal::pn_ptr<pn_handler_t> chandler = h ? cpp_handler(h) : internal::pn_ptr<pn_handler_t>();
     proton::url u(url);
     pn_acceptor_t *acptr = pn_reactor_acceptor(
         reactor_.pn_object(), u.host().c_str(), u.port().c_str(), chandler.get());
-    if (!acptr)
-        throw error(MSG("accept fail: " <<
-                        pn_error_text(pn_io_error(reactor_.pn_io())))
-                        << "(" << url << ")");
+    if (!acptr) {
+        std::string err(pn_error_text(pn_io_error(reactor_.pn_io())));
+        lh.on_error(err);
+        lh.on_close();
+        throw error(err);
+    }
     // Do not use pn_acceptor_set_ssl_domain().  Manage the incoming connections ourselves for
     // more flexibility (i.e. ability to change the server cert for a long running listener).
     listener_context& lc(listener_context::get(acptr));
@@ -252,6 +253,13 @@ void container_impl::configure_server_connection(connection &c) {
     connection_options opts = server_connection_options_;
     opts.update(lc.get_options());
     opts.apply(c);
+    // Handler applied separately
+    proton_handler *h = opts.handler();
+    if (h) {
+        internal::pn_ptr<pn_handler_t> chandler = cpp_handler(h);
+        pn_record_t *record = pn_connection_attachments(unwrap(c));
+        pn_record_set_handler(record, chandler.get());
+    }
 }
 
 void container_impl::run() {

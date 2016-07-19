@@ -1,0 +1,80 @@
+Source: qpid-proton
+Section: libs
+Priority: optional
+Maintainer: Debian Middleware Maintainers <pkg-middleware-maintainers@lists.alioth.debian.org>
+Uploaders: Darryl L. Pierce <dpierce@redhat.com>, Daniel Pocock <daniel@pocock.pro>
+Build-Depends: debhelper (>= 8.0.0),
+               cmake,
+	       swig,
+	       pkg-config,
+	       doxygen,
+	       uuid-dev,
+	       libssl-dev,
+	       php5-dev,
+	       libperl-dev,
+	       python-epydoc,
+	       python (>=2.6.6-3~),
+	       python-dev (>=2.6.6-3~),
+	       ruby,
+	       ruby-dev,
+               ruby-rspec,
+               ruby-simplecov
+Standards-Version: 3.9.3
+Homepage: http://qpid.apache.org/proton
+Vcs-Browser: http://git.debian.org/?p=pkg-middleware/qpid-proton.git
+Vcs-Git: git://git.debian.org/git/pkg-middleware/qpid-proton.git
+
+Package: qpid-proton
+Architecture: any
+Depends: libqpid-proton (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Description: Qpid Proton messaging tools
+
+Package: libqpid-proton
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Pre-Depends: multiarch-support
+Description: C libraries for Qpid Proton.
+
+Package: libqpid-proton-dev
+Architecture: any
+Section: libdevel
+Depends: libqpid-proton (= ${binary:Version}), ${misc:Depends}
+Multi-Arch: same
+Description: Development libraries for writing messaging apps with Qpid Proton
+
+Package: libqpid-proton-dev-examples
+Architecture: all
+Section: libdevel
+depends: libqpid-proton-dev (= ${binary:Version})
+Description: Example applications for writign messaging apps with Qpid Proton
+
+Package: libqpid-proton-dev-doc
+Architecture: all
+Description: Developer documentation for Qpid Proton
+
+Package: python-qpid-proton
+Architecture: any
+Depends: libqpid-proton, ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}
+Provides: ${python:Provides}
+Description: Python language bindings for Qpid Proton messaging framework
+
+Package: python-qpid-proton-doc
+Architecture: all
+Depends: python-qpid-proton (= ${binary:Version})
+Description: Documentation for the Python language bindings for Qpid Proton
+
+Package: php-qpid-proton
+Architecture: any
+Depends: libqpid-proton (= ${binary:Version}), libc6, php5-common, ${misc:Depends}
+Description: PHP language bindings for Qpid Proton messaging framework
+
+Package: perl-qpid-proton
+Architecture: any
+Depends: libqpid-proton (= ${binary:Version}), perl-base, ${misc:Depends}
+Description: Perl language bindings for Qpid Proton messaging framework
+
+Package: qpid-proton-cli
+Architecture: any
+Depends: libqpid-proton (= ${binary:Version}), ${misc:Depends}
+Description: CLI tools for send/receive messages
+

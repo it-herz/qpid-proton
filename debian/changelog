@@ -1,0 +1,23 @@
+qpid-proton (0.13.1) stable; urgency=low
+
+  * Update to version 0.13.1
+
+  -- Dmitrii Zolotov <dzolotov@herzen.spb.ru>  Mon, 18 Jul 2016 21:45:00 +0300
+
+qpid-proton (0.13.0-beta-1) unstable; urgency=low
+
+  * Update to version 0.13.0-beta
+
+ -- Dmitrii Zolotov <dzolotov@herzen.spb.ru>  Thu, 31 May 2016 12:07:00 +0300
+
+qpid-proton (0.12.2-1) unstable; urgency=low
+
+  * Update to version 0.12.2
+
+ -- Dmitrii Zolotov <dzolotov@herzen.spb.ru>  Thu, 31 May 2016 11:48:00 +0300
+
+qpid-proton (0.7-1) unstable; urgency=low
+
+  * Initial release. (Closes: #732302)
+
+ -- Darryl L. Pierce <dpierce@redhat.com>  Wed, 07 May 2014 14:44:45 +0200

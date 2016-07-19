@@ -1,0 +1,10 @@
+qpid-proton_0.13.0-beta-1_amd64.deb libs optional
+libqpid-proton_0.13.0-beta-1_amd64.deb libs optional
+libqpid-proton-dev_0.13.0-beta-1_amd64.deb libdevel optional
+libqpid-proton-dev-examples_0.13.0-beta-1_all.deb libdevel optional
+libqpid-proton-dev-doc_0.13.0-beta-1_all.deb libs optional
+python-qpid-proton_0.13.0-beta-1_amd64.deb libs optional
+python-qpid-proton-doc_0.13.0-beta-1_all.deb libs optional
+php-qpid-proton_0.13.0-beta-1_amd64.deb libs optional
+perl-qpid-proton_0.13.0-beta-1_amd64.deb libs optional
+qpid-proton-cli_0.13.0-beta-1_amd64.deb libs optional

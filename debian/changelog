@@ -2,7 +2,7 @@ qpid-proton (0.13.1) stable; urgency=low
 
   * Update to version 0.13.1
 
-  -- Dmitrii Zolotov <dzolotov@herzen.spb.ru>  Mon, 18 Jul 2016 21:45:00 +0300
+ -- Dmitrii Zolotov <dzolotov@herzen.spb.ru>  Mon, 18 Jul 2016 21:45:00 +0300
 
 qpid-proton (0.13.0-beta-1) unstable; urgency=low
 
